@@ -1,6 +1,8 @@
 package Server.Middleware;
 
 
+import Server.Common.RMHashMap;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -15,27 +17,33 @@ public class TCPMiddleware {
     Socket flightSocket;
 
     private static String car_host = "localhost";
-    private static String room_host = "localhost";
-    private static String flight_host = "localhost";
+//    private static String room_host = "localhost";
+//    private static String flight_host = "localhost";
 
     private static int car_port = 1090;
-    private static int room_port = 1091;
-    private static int flight_port = 1092;
+//    private static int room_port = 1091;
+//    private static int flight_port = 1092;
 
-    private static int middleware_port = 1098;
+    private static int middleware_port = 1097;
 
-    static ServerSocket serverSocket;
+    ServerSocket serverSocket;
+    protected RMHashMap m_data = new RMHashMap();
+
 
 
     public static void main(String[] args){
+        System.out.println("started");
         TCPMiddleware middleware = new TCPMiddleware();
         try{
             middleware.carSocket = new Socket(car_host,car_port);
-            middleware.flightSocket =new Socket(flight_host, flight_port);
-            middleware.roomSocket = new Socket(room_host,room_port);
-            serverSocket = new ServerSocket(middleware_port);
+
+//            middleware.flightSocket =new Socket(flight_host, flight_port);
+//            middleware.roomSocket = new Socket(room_host,room_port);
+            middleware.serverSocket = new ServerSocket(middleware_port);
+            System.out.println(123);
             while(true){
-                Socket socket = serverSocket.accept();
+                System.out.println(456);
+                Socket socket = middleware.serverSocket.accept();
                 new SocketThread(socket,middleware).start();
             }
         }catch (IOException e){
@@ -48,7 +56,7 @@ public class TCPMiddleware {
         TCPMiddleware middleware;
         public SocketThread(Socket client, TCPMiddleware middleware){
             socket = client;
-            middleware = middleware;
+            this.middleware = middleware;
         }
 
         public void run(){
@@ -59,28 +67,33 @@ public class TCPMiddleware {
                 BufferedReader fromCar = new BufferedReader(new InputStreamReader(middleware.carSocket.getInputStream()));
                 PrintWriter toCar = new PrintWriter(middleware.carSocket.getOutputStream(), true);
 
-                BufferedReader fromRoom = new BufferedReader(new InputStreamReader(middleware.roomSocket.getInputStream()));
-                PrintWriter toRoom = new PrintWriter(middleware.roomSocket.getOutputStream(), true);
-
-                BufferedReader fromFlight = new BufferedReader(new InputStreamReader(middleware.flightSocket.getInputStream()));
-                PrintWriter toFlight = new PrintWriter(middleware.flightSocket.getOutputStream(), true);
+//                BufferedReader fromRoom = new BufferedReader(new InputStreamReader(middleware.roomSocket.getInputStream()));
+//                PrintWriter toRoom = new PrintWriter(middleware.roomSocket.getOutputStream(), true);
+//
+//                BufferedReader fromFlight = new BufferedReader(new InputStreamReader(middleware.flightSocket.getInputStream()));
+//                PrintWriter toFlight = new PrintWriter(middleware.flightSocket.getOutputStream(), true);
 
                 String msg = null;
                 while((msg=in_client.readLine())!=null){
+
+                    System.out.println(msg);
                     ArrayList<Integer> servers = allocate(msg);
                     if (servers.contains(0)){
+                        System.out.println("go to car server");
                         toCar.println(msg);
                     }
 
-                    if(servers.contains(1)){
-                        toRoom.println(msg);
-                    }
+//                    if(servers.contains(1)){
+//                        toRoom.println(msg);
+//                    }
+//
+//                    if(servers.contains(2)){
+//                        toFLight.print(msg);
+//                    }
 
-                    if(servers.contains(2)){
-                        toRoom.print(msg);
-                    }
 
                 }
+
             }catch (IOException e){
                 e.printStackTrace();
             }

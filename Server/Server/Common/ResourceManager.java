@@ -5,20 +5,64 @@
 
 package Server.Common;
 
-import Server.Interface.*;
 
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.*;
 import java.rmi.RemoteException;
 import java.io.*;
 
-public class ResourceManager implements IResourceManager
+public class ResourceManager
 {
 	protected String m_name = "";
 	protected RMHashMap m_data = new RMHashMap();
+	ServerSocket serverSocket;
+	private int port;
 
-	public ResourceManager(String p_name)
+	public static void main(String[] args){
+		ResourceManager rm = new ResourceManager("car_manager",1090);
+		try{
+			rm.serverSocket = new ServerSocket(rm.port);
+			System.out.println("working");
+			while(true){
+				Socket socket = rm.serverSocket.accept();
+				new SocketThread(socket).start();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+
+
+
+	public ResourceManager(String p_name, int port)
 	{
 		m_name = p_name;
+		this.port = port;
+	}
+
+	static class SocketThread extends Thread{
+		Socket socket;
+
+		public SocketThread (Socket middleware){
+			socket = middleware;
+		}
+
+		public void run(){
+			try{
+				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+				PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+				String msg = null;
+				while((msg=in.readLine())!=null){
+					System.out.println(msg);
+
+				}
+			}catch (IOException e){
+				e.printStackTrace();
+			}
+		}
 	}
 
 	// Reads a data item
@@ -70,7 +114,7 @@ public class ResourceManager implements IResourceManager
 			}
 			else
 			{
-				Trace.info("RM::deleteItem(" + xid + ", " + key + ") item can't be deleted because some customers have reserved it");
+				Trace.info("RM::deleteItem(" + xid + ", " + key + ") item can't be deleted because some  s have reserved it");
 				return false;
 			}
 		}
