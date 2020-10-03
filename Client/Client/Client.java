@@ -1,7 +1,7 @@
 package Client;
 
-import Server.Interface.*;
 
+import java.net.Socket;
 import java.util.*;
 import java.io.*;
 import java.rmi.RemoteException;
@@ -9,16 +9,42 @@ import java.rmi.ConnectException;
 import java.rmi.ServerException;
 import java.rmi.UnmarshalException;
 
-public abstract class Client
+public class Client
 {
-	IResourceManager m_resourceManager = null;
+	boolean flag = false;
+	Socket socket;
+	BufferedReader from_server;
+	PrintWriter to_server;
+	private static String server_host = "localhost";
+	private static int server_port = 9091;
 
 	public Client()
 	{
 		super();
 	}
 
-	public abstract void connectServer();
+	public static void main(String[] args){
+		Client client = new Client();
+		client.start();
+	}
+
+	public void connectServer(){
+		try{
+			socket = new Socket(server_host,server_port);
+			from_server = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			to_server = new PrintWriter(socket.getOutputStream(), true);
+			flag = true;
+		}catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	public void request (String cmd){
+		try{
+			to_server.println(cmd);
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+	}
 
 	public void start()
 	{
@@ -46,13 +72,17 @@ public abstract class Client
 			try {
 				arguments = parse(command);
 				Command cmd = Command.fromString((String)arguments.elementAt(0));
-				try {
-					execute(cmd, arguments);
-				}
-				catch (ConnectException e) {
+				if(!flag){
 					connectServer();
-					execute(cmd, arguments);
 				}
+				execute(cmd,arguments);
+//				try {
+//					execute(cmd, arguments);
+//				}
+//				catch (ConnectException e) {
+//					connectServer();
+//					execute(cmd, arguments);
+//				}
 			}
 			catch (IllegalArgumentException|ServerException e) {
 				System.err.println((char)27 + "[31;1mCommand exception: " + (char)27 + "[0m" + e.getLocalizedMessage());
@@ -66,6 +96,10 @@ public abstract class Client
 			}
 		}
 	}
+
+
+
+
 
 	public void execute(Command cmd, Vector<String> arguments) throws RemoteException, NumberFormatException
 	{
@@ -91,16 +125,15 @@ public abstract class Client
 				System.out.println("-Flight Seats: " + arguments.elementAt(3));
 				System.out.println("-Flight Price: " + arguments.elementAt(4));
 
-				int id = toInt(arguments.elementAt(1));
-				int flightNum = toInt(arguments.elementAt(2));
-				int flightSeats = toInt(arguments.elementAt(3));
-				int flightPrice = toInt(arguments.elementAt(4));
+				String forward = arguments.elementAt(0);
 
-				if (m_resourceManager.addFlight(id, flightNum, flightSeats, flightPrice)) {
-					System.out.println("Flight added");
-				} else {
-					System.out.println("Flight could not be added");
+				for(int i = 1; i < arguments.size();i++){
+					forward = forward+",";
+					forward = forward + arguments.elementAt(i);
 				}
+
+				this.request(forward);
+
 				break;
 			}
 			case AddCars: {
@@ -111,16 +144,14 @@ public abstract class Client
 				System.out.println("-Number of Cars: " + arguments.elementAt(3));
 				System.out.println("-Car Price: " + arguments.elementAt(4));
 
-				int id = toInt(arguments.elementAt(1));
-				String location = arguments.elementAt(2);
-				int numCars = toInt(arguments.elementAt(3));
-				int price = toInt(arguments.elementAt(4));
+				String forward = arguments.elementAt(0);
 
-				if (m_resourceManager.addCars(id, location, numCars, price)) {
-					System.out.println("Cars added");
-				} else {
-					System.out.println("Cars could not be added");
+				for(int i = 1; i < arguments.size();i++){
+					forward = forward+",";
+					forward = forward + arguments.elementAt(i);
 				}
+
+				this.request(forward);
 				break;
 			}
 			case AddRooms: {
@@ -131,16 +162,15 @@ public abstract class Client
 				System.out.println("-Number of Rooms: " + arguments.elementAt(3));
 				System.out.println("-Room Price: " + arguments.elementAt(4));
 
-				int id = toInt(arguments.elementAt(1));
-				String location = arguments.elementAt(2);
-				int numRooms = toInt(arguments.elementAt(3));
-				int price = toInt(arguments.elementAt(4));
+				String forward = arguments.elementAt(0);
 
-				if (m_resourceManager.addRooms(id, location, numRooms, price)) {
-					System.out.println("Rooms added");
-				} else {
-					System.out.println("Rooms could not be added");
+				for(int i = 1; i < arguments.size();i++){
+					forward = forward+",";
+					forward = forward + arguments.elementAt(i);
 				}
+
+				this.request(forward);
+
 				break;
 			}
 			case AddCustomer: {
@@ -148,10 +178,14 @@ public abstract class Client
 
 				System.out.println("Adding a new customer [xid=" + arguments.elementAt(1) + "]");
 
-				int id = toInt(arguments.elementAt(1));
-				int customer = m_resourceManager.newCustomer(id);
+				String forward = arguments.elementAt(0);
 
-				System.out.println("Add customer ID: " + customer);
+				for(int i = 1; i < arguments.size();i++){
+					forward = forward+",";
+					forward = forward + arguments.elementAt(i);
+				}
+
+				this.request(forward);
 				break;
 			}
 			case AddCustomerID: {
@@ -160,14 +194,14 @@ public abstract class Client
 				System.out.println("Adding a new customer [xid=" + arguments.elementAt(1) + "]");
 				System.out.println("-Customer ID: " + arguments.elementAt(2));
 
-				int id = toInt(arguments.elementAt(1));
-				int customerID = toInt(arguments.elementAt(2));
+				String forward = arguments.elementAt(0);
 
-				if (m_resourceManager.newCustomer(id, customerID)) {
-					System.out.println("Add customer ID: " + customerID);
-				} else {
-					System.out.println("Customer could not be added");
+				for(int i = 1; i < arguments.size();i++){
+					forward = forward+",";
+					forward = forward + arguments.elementAt(i);
 				}
+
+				this.request(forward);
 				break;
 			}
 			case DeleteFlight: {
@@ -176,14 +210,14 @@ public abstract class Client
 				System.out.println("Deleting a flight [xid=" + arguments.elementAt(1) + "]");
 				System.out.println("-Flight Number: " + arguments.elementAt(2));
 
-				int id = toInt(arguments.elementAt(1));
-				int flightNum = toInt(arguments.elementAt(2));
+				String forward = arguments.elementAt(0);
 
-				if (m_resourceManager.deleteFlight(id, flightNum)) {
-					System.out.println("Flight Deleted");
-				} else {
-					System.out.println("Flight could not be deleted");
+				for(int i = 1; i < arguments.size();i++){
+					forward = forward+",";
+					forward = forward + arguments.elementAt(i);
 				}
+
+				this.request(forward);
 				break;
 			}
 			case DeleteCars: {
@@ -192,14 +226,14 @@ public abstract class Client
 				System.out.println("Deleting all cars at a particular location [xid=" + arguments.elementAt(1) + "]");
 				System.out.println("-Car Location: " + arguments.elementAt(2));
 
-				int id = toInt(arguments.elementAt(1));
-				String location = arguments.elementAt(2);
+				String forward = arguments.elementAt(0);
 
-				if (m_resourceManager.deleteCars(id, location)) {
-					System.out.println("Cars Deleted");
-				} else {
-					System.out.println("Cars could not be deleted");
+				for(int i = 1; i < arguments.size();i++){
+					forward = forward+",";
+					forward = forward + arguments.elementAt(i);
 				}
+
+				this.request(forward);
 				break;
 			}
 			case DeleteRooms: {
@@ -208,14 +242,14 @@ public abstract class Client
 				System.out.println("Deleting all rooms at a particular location [xid=" + arguments.elementAt(1) + "]");
 				System.out.println("-Car Location: " + arguments.elementAt(2));
 
-				int id = toInt(arguments.elementAt(1));
-				String location = arguments.elementAt(2);
+				String forward = arguments.elementAt(0);
 
-				if (m_resourceManager.deleteRooms(id, location)) {
-					System.out.println("Rooms Deleted");
-				} else {
-					System.out.println("Rooms could not be deleted");
+				for(int i = 1; i < arguments.size();i++){
+					forward = forward+",";
+					forward = forward + arguments.elementAt(i);
 				}
+
+				this.request(forward);
 				break;
 			}
 			case DeleteCustomer: {
@@ -223,15 +257,15 @@ public abstract class Client
 
 				System.out.println("Deleting a customer from the database [xid=" + arguments.elementAt(1) + "]");
 				System.out.println("-Customer ID: " + arguments.elementAt(2));
-				
-				int id = toInt(arguments.elementAt(1));
-				int customerID = toInt(arguments.elementAt(2));
 
-				if (m_resourceManager.deleteCustomer(id, customerID)) {
-					System.out.println("Customer Deleted");
-				} else {
-					System.out.println("Customer could not be deleted");
+				String forward = arguments.elementAt(0);
+
+				for(int i = 1; i < arguments.size();i++){
+					forward = forward+",";
+					forward = forward + arguments.elementAt(i);
 				}
+
+				this.request(forward);
 				break;
 			}
 			case QueryFlight: {
@@ -239,12 +273,15 @@ public abstract class Client
 
 				System.out.println("Querying a flight [xid=" + arguments.elementAt(1) + "]");
 				System.out.println("-Flight Number: " + arguments.elementAt(2));
-				
-				int id = toInt(arguments.elementAt(1));
-				int flightNum = toInt(arguments.elementAt(2));
 
-				int seats = m_resourceManager.queryFlight(id, flightNum);
-				System.out.println("Number of seats available: " + seats);
+				String forward = arguments.elementAt(0);
+
+				for(int i = 1; i < arguments.size();i++){
+					forward = forward+",";
+					forward = forward + arguments.elementAt(i);
+				}
+
+				this.request(forward);
 				break;
 			}
 			case QueryCars: {
@@ -252,12 +289,15 @@ public abstract class Client
 
 				System.out.println("Querying cars location [xid=" + arguments.elementAt(1) + "]");
 				System.out.println("-Car Location: " + arguments.elementAt(2));
-				
-				int id = toInt(arguments.elementAt(1));
-				String location = arguments.elementAt(2);
 
-				int numCars = m_resourceManager.queryCars(id, location);
-				System.out.println("Number of cars at this location: " + numCars);
+				String forward = arguments.elementAt(0);
+
+				for(int i = 1; i < arguments.size();i++){
+					forward = forward+",";
+					forward = forward + arguments.elementAt(i);
+				}
+
+				this.request(forward);
 				break;
 			}
 			case QueryRooms: {
@@ -265,12 +305,15 @@ public abstract class Client
 
 				System.out.println("Querying rooms location [xid=" + arguments.elementAt(1) + "]");
 				System.out.println("-Room Location: " + arguments.elementAt(2));
-				
-				int id = toInt(arguments.elementAt(1));
-				String location = arguments.elementAt(2);
 
-				int numRoom = m_resourceManager.queryRooms(id, location);
-				System.out.println("Number of rooms at this location: " + numRoom);
+				String forward = arguments.elementAt(0);
+
+				for(int i = 1; i < arguments.size();i++){
+					forward = forward+",";
+					forward = forward + arguments.elementAt(i);
+				}
+
+				this.request(forward);
 				break;
 			}
 			case QueryCustomer: {
@@ -279,11 +322,14 @@ public abstract class Client
 				System.out.println("Querying customer information [xid=" + arguments.elementAt(1) + "]");
 				System.out.println("-Customer ID: " + arguments.elementAt(2));
 
-				int id = toInt(arguments.elementAt(1));
-				int customerID = toInt(arguments.elementAt(2));
+				String forward = arguments.elementAt(0);
 
-				String bill = m_resourceManager.queryCustomerInfo(id, customerID);
-				System.out.print(bill);
+				for(int i = 1; i < arguments.size();i++){
+					forward = forward+",";
+					forward = forward + arguments.elementAt(i);
+				}
+
+				this.request(forward);
 				break;               
 			}
 			case QueryFlightPrice: {
@@ -292,11 +338,14 @@ public abstract class Client
 				System.out.println("Querying a flight price [xid=" + arguments.elementAt(1) + "]");
 				System.out.println("-Flight Number: " + arguments.elementAt(2));
 
-				int id = toInt(arguments.elementAt(1));
-				int flightNum = toInt(arguments.elementAt(2));
+				String forward = arguments.elementAt(0);
 
-				int price = m_resourceManager.queryFlightPrice(id, flightNum);
-				System.out.println("Price of a seat: " + price);
+				for(int i = 1; i < arguments.size();i++){
+					forward = forward+",";
+					forward = forward + arguments.elementAt(i);
+				}
+
+				this.request(forward);
 				break;
 			}
 			case QueryCarsPrice: {
@@ -305,11 +354,14 @@ public abstract class Client
 				System.out.println("Querying cars price [xid=" + arguments.elementAt(1) + "]");
 				System.out.println("-Car Location: " + arguments.elementAt(2));
 
-				int id = toInt(arguments.elementAt(1));
-				String location = arguments.elementAt(2);
+				String forward = arguments.elementAt(0);
 
-				int price = m_resourceManager.queryCarsPrice(id, location);
-				System.out.println("Price of cars at this location: " + price);
+				for(int i = 1; i < arguments.size();i++){
+					forward = forward+",";
+					forward = forward + arguments.elementAt(i);
+				}
+
+				this.request(forward);
 				break;
 			}
 			case QueryRoomsPrice: {
@@ -318,11 +370,14 @@ public abstract class Client
 				System.out.println("Querying rooms price [xid=" + arguments.elementAt(1) + "]");
 				System.out.println("-Room Location: " + arguments.elementAt(2));
 
-				int id = toInt(arguments.elementAt(1));
-				String location = arguments.elementAt(2);
+				String forward = arguments.elementAt(0);
 
-				int price = m_resourceManager.queryRoomsPrice(id, location);
-				System.out.println("Price of rooms at this location: " + price);
+				for(int i = 1; i < arguments.size();i++){
+					forward = forward+",";
+					forward = forward + arguments.elementAt(i);
+				}
+
+				this.request(forward);
 				break;
 			}
 			case ReserveFlight: {
@@ -332,15 +387,15 @@ public abstract class Client
 				System.out.println("-Customer ID: " + arguments.elementAt(2));
 				System.out.println("-Flight Number: " + arguments.elementAt(3));
 
-				int id = toInt(arguments.elementAt(1));
-				int customerID = toInt(arguments.elementAt(2));
-				int flightNum = toInt(arguments.elementAt(3));
+				String forward = arguments.elementAt(0);
 
-				if (m_resourceManager.reserveFlight(id, customerID, flightNum)) {
-					System.out.println("Flight Reserved");
-				} else {
-					System.out.println("Flight could not be reserved");
+				for(int i = 1; i < arguments.size();i++){
+					forward = forward+",";
+					forward = forward + arguments.elementAt(i);
 				}
+
+				this.request(forward);
+
 				break;
 			}
 			case ReserveCar: {
@@ -350,15 +405,14 @@ public abstract class Client
 				System.out.println("-Customer ID: " + arguments.elementAt(2));
 				System.out.println("-Car Location: " + arguments.elementAt(3));
 
-				int id = toInt(arguments.elementAt(1));
-				int customerID = toInt(arguments.elementAt(2));
-				String location = arguments.elementAt(3);
+				String forward = arguments.elementAt(0);
 
-				if (m_resourceManager.reserveCar(id, customerID, location)) {
-					System.out.println("Car Reserved");
-				} else {
-					System.out.println("Car could not be reserved");
+				for(int i = 1; i < arguments.size();i++){
+					forward = forward+",";
+					forward = forward + arguments.elementAt(i);
 				}
+
+				this.request(forward);
 				break;
 			}
 			case ReserveRoom: {
@@ -367,16 +421,15 @@ public abstract class Client
 				System.out.println("Reserving a room at a location [xid=" + arguments.elementAt(1) + "]");
 				System.out.println("-Customer ID: " + arguments.elementAt(2));
 				System.out.println("-Room Location: " + arguments.elementAt(3));
-				
-				int id = toInt(arguments.elementAt(1));
-				int customerID = toInt(arguments.elementAt(2));
-				String location = arguments.elementAt(3);
 
-				if (m_resourceManager.reserveRoom(id, customerID, location)) {
-					System.out.println("Room Reserved");
-				} else {
-					System.out.println("Room could not be reserved");
+				String forward = arguments.elementAt(0);
+
+				for(int i = 1; i < arguments.size();i++){
+					forward = forward+",";
+					forward = forward + arguments.elementAt(i);
 				}
+
+				this.request(forward);
 				break;
 			}
 			case Bundle: {
@@ -406,11 +459,14 @@ public abstract class Client
 				boolean car = toBoolean(arguments.elementAt(arguments.size()-2));
 				boolean room = toBoolean(arguments.elementAt(arguments.size()-1));
 
-				if (m_resourceManager.bundle(id, customerID, flightNumbers, location, car, room)) {
-					System.out.println("Bundle Reserved");
-				} else {
-					System.out.println("Bundle could not be reserved");
+				String forward = arguments.elementAt(0);
+
+				for(int i = 1; i < arguments.size();i++){
+					forward = forward+",";
+					forward = forward + arguments.elementAt(i);
 				}
+
+				this.request(forward);
 				break;
 			}
 			case Quit:
