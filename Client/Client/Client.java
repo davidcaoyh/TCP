@@ -41,6 +41,18 @@ public class Client
 	public void request (String cmd){
 		try{
 			to_server.println(cmd);
+			String reply;
+			while ((reply = from_server.readLine()) != null) {
+
+//				if(reply.length()==0){
+//					System.out.println(123);
+//					break;
+//				}
+				System.out.println(reply);
+			}
+			this.socket.close();
+			this.flag = false;
+
 		}catch (Exception e){
 			e.printStackTrace();
 		}
@@ -56,6 +68,7 @@ public class Client
 
 		while (true)
 		{
+
 			// Read the next command
 			String command = "";
 			Vector<String> arguments = new Vector<String>();
@@ -75,7 +88,13 @@ public class Client
 				if(!flag){
 					connectServer();
 				}
+
+				this.connectServer();
 				execute(cmd,arguments);
+
+				String reply = null;
+
+
 //				try {
 //					execute(cmd, arguments);
 //				}
