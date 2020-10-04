@@ -20,7 +20,7 @@ public class RoomManager implements ResourceManager
 	private int port;
 
 	public static void main(String[] args){
-		RoomManager rm = new RoomManager("room_manager",1091);
+		RoomManager rm = new RoomManager("room_manager",1081);
 		try{
 			rm.serverSocket = new ServerSocket(rm.port);
 			System.out.println("working");
@@ -56,12 +56,19 @@ public class RoomManager implements ResourceManager
 				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 				PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 				String msg = null;
-				while((msg=in.readLine())!=null){
-					System.out.println(msg);
+				System.out.println("I got called");
+				msg = in.readLine();
+//				System.out.println(msg);
+				if(msg!=null){
+					System.out.println("I got called1");
+
 					String[] command = msg.split(",");
 					String returnV = execute(command, roomManager);
 					out.println(returnV);
 				}
+				in.close();
+				out.close();
+				socket.close();
 			}catch (IOException e){
 				e.printStackTrace();
 			}

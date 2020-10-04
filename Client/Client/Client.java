@@ -16,7 +16,7 @@ public class Client
 	BufferedReader from_server;
 	PrintWriter to_server;
 	private static String server_host = "localhost";
-	private static int server_port = 1097;
+	private static int server_port = 1080;
 
 	public Client()
 	{

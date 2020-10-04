@@ -20,7 +20,7 @@ public class CarManager implements ResourceManager
 	private int port;
 
 	public static void main(String[] args){
-		CarManager rm = new CarManager("car_manager",1090);
+		CarManager rm = new CarManager("car_manager",1083);
 		try{
 			rm.serverSocket = new ServerSocket(rm.port);
 			System.out.println("working");
@@ -56,12 +56,18 @@ public class CarManager implements ResourceManager
 				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 				PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 				String msg = null;
-				while((msg=in.readLine())!=null){
-					System.out.println(msg);
+				System.out.println("I got called");
+				msg=in.readLine();
+//				System.out.println(msg);
+				if(msg!=null) {
 					String[] command = msg.split(",");
 					String returnV = execute(command, carManager);
+					System.out.println(returnV);
 					out.println(returnV);
 				}
+				in.close();
+				out.close();
+				socket.close();
 			}catch (IOException e){
 				e.printStackTrace();
 			}
