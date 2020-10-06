@@ -15,6 +15,7 @@ public class FlightManager implements ResourceManager
 {
 	protected String m_name = "";
 	protected RMHashMap m_data = new RMHashMap();
+	protected RMHashMap c_data = new RMHashMap();
 	ServerSocket serverSocket;
 	private int port;
 
@@ -110,7 +111,6 @@ public class FlightManager implements ResourceManager
                 
                 int id = toInt(cmd[1]);
                 int flightNum = toInt(cmd[2]);
-
                 int seats = rm.queryFlight(id, flightNum);
                 returnV = returnV + "Number of seats available: " + seats+ "\n";
 				return returnV;
@@ -141,7 +141,69 @@ public class FlightManager implements ResourceManager
                 }
 				return returnV;
             }
+			case "bundle":{
+				int id = toInt(cmd[1]);
+				int customerID = toInt(cmd[2]);
+				ArrayList<Integer> flightList = new ArrayList<Integer>();
 
+				for(int i = 3; i < cmd.length; i++){
+					flightList.add(toInt(cmd[i]));
+				}
+				for(int flight: flightList){
+					returnV = returnV + "Reserving seat in a flight [xid=" + id + "]\n";
+					returnV = returnV + "-Customer ID: " + customerID + "\n";
+					returnV = returnV + "-Flight Number: " + flight + "\n";
+
+					if (rm.reserveFlight(id, customerID, flight)) {
+						returnV = returnV + "Flight Reserved"+ "\n";
+					} else {
+						returnV = returnV + "Flight could not be reserved"+ "\n";
+					}
+				}
+				return returnV;
+			}
+			
+			case "addcustomerid":{
+                returnV = returnV + "Adding a new customer [xid=" + cmd[1] + "]\n";
+                returnV = returnV + "-Customer ID: " + cmd[2] + "\n";
+
+                int id = toInt(cmd[1]);
+                int customerID = toInt(cmd[2]);
+
+                if (rm.newCustomer(id, customerID)) {
+                    returnV = returnV + "Add customer ID: " + customerID+ "\n";
+                } else {
+                    returnV = returnV + "Customer could not be added"+ "\n";
+                }
+				return returnV;
+			}
+            case "deletecustomer":{
+                returnV = returnV + "Deleting a customer from the database [xid=" + cmd[1] + "]\n";
+                returnV = returnV + "-Customer ID: " +cmd[2] + "\n";
+
+                int id = toInt(cmd[1]);
+                int customerID = toInt(cmd[2]);
+
+                if (rm.deleteCustomer(id, customerID)) {
+                    returnV = returnV + "Customer Deleted";
+                } else {
+                    returnV = returnV + "Customer could not be deleted";
+				}
+				return returnV;
+            }
+            case "querycustomer":{
+                returnV = returnV + "Querying customer information [xid=" + cmd[1] + "]\n";
+                returnV = returnV + "-Customer ID: " + cmd[2] + "\n";
+
+                int id = toInt(cmd[1]);
+				int customerID = toInt(cmd[2]);
+				
+                String bill = rm.queryCustomerInfo(id, customerID);
+				returnV = returnV + bill;
+				return returnV;
+            }
+
+			
 			default:{
 				return "Wrong Input";
 			}
@@ -162,6 +224,7 @@ public class FlightManager implements ResourceManager
 		}
 	}
 
+
 	// Writes a data item
 	protected void writeData(int xid, String key, RMItem value)
 	{
@@ -169,7 +232,6 @@ public class FlightManager implements ResourceManager
 			m_data.put(key, value);
 		}
 	}
-
 	// Remove the item out of storage
 	protected void removeData(int xid, String key)
 	{
@@ -239,7 +301,7 @@ public class FlightManager implements ResourceManager
 	{
 		Trace.info("RM::reserveItem(" + xid + ", customer=" + customerID + ", " + key + ", " + location + ") called" );        
 		// Read customer object if it exists (and read lock it)
-		Customer customer = (Customer)readData(xid, Customer.getKey(customerID));
+		Customer customer = (Customer)readCustomer(xid, Customer.getKey(customerID));
 		if (customer == null)
 		{
 			Trace.warn("RM::reserveItem(" + xid + ", " + customerID + ", " + key + ", " + location + ")  failed--customer doesn't exist");
@@ -261,7 +323,7 @@ public class FlightManager implements ResourceManager
 		else
 		{            
 			customer.reserve(key, location, item.getPrice());        
-			writeData(xid, customer.getKey(), customer);
+			writeCustomer(xid, customer.getKey(), customer);
 
 			// Decrease the number of available items in the storage
 			item.setCount(item.getCount() - 1);
@@ -326,12 +388,6 @@ public class FlightManager implements ResourceManager
 		return reserveItem(xid, customerID, Flight.getKey(flightNum), String.valueOf(flightNum));
 	}
 
-	// Reserve bundle 
-	public boolean bundle(int xid, int customerId, Vector<String> flightNumbers, String location, boolean car, boolean room) throws RemoteException
-	{
-		return false;
-	}
-
 	public String getName() throws RemoteException
 	{
 		return m_name;
@@ -346,5 +402,94 @@ public class FlightManager implements ResourceManager
 	{
 		return (Boolean.valueOf(string)).booleanValue();
 	}
+
+
+
+
+	protected RMItem readCustomer(int xid, String key)	{
+		synchronized(c_data) {
+			RMItem item = c_data.get(key);
+			if (item != null) {
+				return (RMItem)item.clone();
+			}
+			return null;
+		}
+	}
+
+	protected void writeCustomer(int xid, String key, RMItem value)
+	{
+		synchronized(c_data) {
+			c_data.put(key, value);
+		}
+	}
+
+	public boolean newCustomer(int xid, int customerID){
+		Trace.info("RM::newCustomer(" + xid + ", " + customerID + ") called");
+		Customer customer = (Customer)readCustomer(xid, Customer.getKey(customerID));
+		if(customer == null){
+			customer = new Customer(customerID);
+			writeCustomer(xid, customer.getKey(), customer);
+			Trace.info("RM::newCustomer(" + xid + ", " + customerID + ") created a new customer");
+			return true;
+		}
+		else{
+			Trace.info("INFO: RM::newCustomer(" + xid + ", " + customerID + ") failed--customer already exists");
+			return false;
+		}
+	}
+
+	public boolean deleteCustomer(int xid, int customerID){
+		Trace.info("RM::deleteCustomer(" + xid + ", " + customerID + ") called");
+		Customer customer = (Customer)readCustomer(xid, Customer.getKey(customerID));
+		if (customer == null)
+		{
+			Trace.warn("RM::deleteCustomer(" + xid + ", " + customerID + ") failed--customer doesn't exist");
+			return false;
+		}
+		else
+		{            
+			// Increase the reserved numbers of all reservable items which the customer reserved. 
+ 			RMHashMap reservations = customer.getReservations();
+			for (String reservedKey : reservations.keySet())
+			{        
+				ReservedItem reserveditem = customer.getReservedItem(reservedKey);
+				Trace.info("RM::deleteCustomer(" + xid + ", " + customerID + ") has reserved " + reserveditem.getKey() + " " +  reserveditem.getCount() +  " times");
+				ReservableItem item  = (ReservableItem)readData(xid, reserveditem.getKey());
+				Trace.info("RM::deleteCustomer(" + xid + ", " + customerID + ") has reserved " + reserveditem.getKey() + " which is reserved " +  item.getReserved() +  " times and is still available " + item.getCount() + " times");
+				item.setReserved(item.getReserved() - reserveditem.getCount());
+				item.setCount(item.getCount() + reserveditem.getCount());
+				writeData(xid, item.getKey(), item);
+			}
+
+			// Remove the customer from the storage
+			removeCustomer(xid, customer.getKey());
+			Trace.info("RM::deleteCustomer(" + xid + ", " + customerID + ") succeeded");
+			return true;
+		}
+	}
+
+	public void removeCustomer(int xid, String key){
+		synchronized(c_data){
+			c_data.remove(key);
+		}
+	}
+
+	public String queryCustomerInfo(int xid, int customerID){
+		Trace.info("RM::queryCustomerInfo(" + xid + ", " + customerID + ") called");
+		Customer customer = (Customer)readCustomer(xid, Customer.getKey(customerID));
+		if (customer == null)
+		{
+			Trace.warn("RM::queryCustomerInfo(" + xid + ", " + customerID + ") failed--customer doesn't exist");
+			// NOTE: don't change this--WC counts on this value indicating a customer does not exist...
+			return "";
+		}
+		else
+		{
+			Trace.info("RM::queryCustomerInfo(" + xid + ", " + customerID + ")");
+			System.out.println(customer.getBill());
+			return customer.getBill();
+		}
+	}
+
 }
  
