@@ -108,7 +108,7 @@ public class TCPMiddleware {
                         toCar.println(msg);
                         String m;
                         while((m= fromCar.readLine())!= null) {
-                            System.out.println(m);
+                            System.out.println("Reply From CarManager: " + m);
                             car_reply = car_reply +"\n"+m;
                         }
                     }
@@ -118,7 +118,7 @@ public class TCPMiddleware {
                         toRoom.println(msg);
                         String m;
                         while((m=fromRoom.readLine())!=null){
-                            System.out.println(m);
+                            System.out.println("Reply From RoomManager: " + m);
                             room_reply = room_reply+ "\n" + m;
                         }
                     }
@@ -128,7 +128,7 @@ public class TCPMiddleware {
                         toFlight.println(msg);
                         String m;
                         while((m=fromFlight.readLine())!=null){
-                            System.out.println(m);
+                            System.out.println("Reply From FlightManager: " + m);
                             flight_reply = flight_reply +"\n" +m;
                         }
                     }
