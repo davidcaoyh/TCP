@@ -100,6 +100,8 @@ public class TCPMiddleware {
                 String car_reply = "";
                 String room_reply = "";
                 String flight_reply ="";
+                String customer_reply = "";
+                String bundle_reply = "";
 
                     if (servers.contains(0)){
                         System.out.println("go to car server");
@@ -131,43 +133,114 @@ public class TCPMiddleware {
                         }
                     }
 
-//                if(servers.contains(3)){
-//                    String[] cmds = msg.split(",");
-//                    if(cmds[0].toLowerCase().contains("addcustomer")){
-//                        int cid =  this.middleware.newCustomer(Integer.parseInt(cmds[1]));
-//                        out_client.println("The customer id is: "+ String.valueOf(cid));
-//                    }
-//                    if(cmds[0].toLowerCase().contains("addcustomerid")){
-//                        boolean exist = this.middleware.newCustomer(Integer.parseInt(cmds[1]), Integer.parseInt(cmds[2]));
-//                        if(exist){
-//                            out_client.println("Customer created");
-//                        }else{
-//                            out_client.println("Customer already existed");
-//                        }
-//                    }
-//                    if(cmds[0].toLowerCase().contains("querycustomer")){
-//                        String res = middleware.queryCustomerInfo(Integer.parseInt(cmds[1]), Integer.parseInt(cmds[2]));
-//                        if(res.equals("")){
-//                            out_client.println("The customer does not exist");
-//                        }else{
-//                            out_client.println(res);
-//                        }
-//                    }
-//
-//                    if(cmds[0].toLowerCase().contains("deletecustomer")){
-//
-//                    }
-//                if(servers.contains(3)){
-//                    System.out.println("go to three servers");
-//                    toCar.println(msg);
-//                    toRoom.println(msg);
-//
-//                    String m1;
-//                    String m2;
-//                    String m3;
-//                    while((m1=fromCar))
-//                }
-//                }
+                if(servers.contains(3)){
+                    String[] cmds = msg.split(",");
+                    if(cmds[0].equals("AddCustomer")){
+                        int cid =  this.middleware.newCustomer(Integer.parseInt(cmds[1]));
+                        String parsedCmd = "AddCustomerId,"+cmds[1]+","+cid;
+                        toCar.println(parsedCmd);
+                        toFlight.println(parsedCmd);
+                        toRoom.println(parsedCmd);
+                        customer_reply =  "The customer id is: "+ String.valueOf(cid);
+                    }
+                    if(cmds[0].equals("AddCustomerId")){
+                        toCar.println(msg);
+                        toFlight.println(msg);
+                        toRoom.println(msg);
+                        customer_reply = customer_reply + fromCar.readLine();
+
+                    }
+                    if(cmds[0].toLowerCase().equals("querycustomer")){
+                        toCar.println(msg);
+                        toFlight.println(msg);
+                        toRoom.println(msg);
+                        String m;
+                        while((m=fromFlight.readLine())!=null){
+                            System.out.println(m);
+                            customer_reply = customer_reply +"\n" +m;
+                        }
+
+                        while((m=fromCar.readLine())!=null){
+                            System.out.println(m);
+                            customer_reply = customer_reply +"\n" +m;
+                        }
+
+                        while((m=fromRoom.readLine())!=null){
+                            System.out.println(m);
+                            customer_reply = customer_reply +"\n" +m;
+                        }
+                    }
+
+                    if(cmds[0].toLowerCase().contains("deletecustomer")){
+                        this.middleware.deleteCustomer(Integer.parseInt(cmds[1]),Integer.parseInt(cmds[2]));
+                        toCar.println(msg);
+                        toFlight.println(msg);
+                        toRoom.println(msg);
+                        String m;
+                        while((m=fromFlight.readLine())!=null){
+                            System.out.println(m);
+                            customer_reply = customer_reply +"\n" +m;
+                        }
+
+                        while((m=fromCar.readLine())!=null){
+                            System.out.println(m);
+                            customer_reply = customer_reply +"\n" +m;
+                        }
+
+                        while((m=fromRoom.readLine())!=null){
+                            System.out.println(m);
+                            customer_reply = customer_reply +"\n" +m;
+                        }
+
+
+                    }
+
+                }
+                if(servers.contains(4)){
+                    String[] cmds = msg.split(",");
+                    int n = cmds.length;
+                    String location = cmds[n-3];
+                    int car = Integer.parseInt(cmds[n-2]);
+                    int room = Integer.parseInt(cmds[n-1]);
+                    String parsedCmd = cmds[0];
+                    for(int i = 1; i < n-3;i++){
+                        parsedCmd = parsedCmd +","+ cmds[i];
+                    }
+                    toFlight.println(parsedCmd);
+                    String m;
+                    while((m=fromFlight.readLine())!=null){
+                        System.out.println(m);
+                        bundle_reply = bundle_reply +"\n" +m;
+                    }
+
+                    if(car == 1){
+                        String car_cmd = "ReserveCar,"+cmds[1]+","+cmds[2]+","+cmds[n-3];
+                        toCar.println(car_cmd);
+                        while((m=fromCar.readLine())!=null){
+                            System.out.println(m);
+                            bundle_reply = bundle_reply +"\n" +m;
+                        }
+                    }
+
+                    if(room == 1){
+                        String room_cmd = "ReserveRoom,"+cmds[1]+","+cmds[2]+","+cmds[n-3];
+                        toRoom.println(room_cmd);
+                        while((m=fromRoom.readLine())!=null){
+                            System.out.println(m);
+                            bundle_reply = bundle_reply +"\n" +m;
+                        }
+
+                    }
+
+
+                }
+                if(!bundle_reply.equals("")){
+                    out_client.println(bundle_reply);
+                }
+
+                if(!customer_reply.equals("")){
+                    out_client.println(customer_reply);
+                }
 
                 if(!flight_reply.equals("")){
                     out_client.println(flight_reply);
@@ -212,9 +285,6 @@ public class TCPMiddleware {
                 ret.add(2);
             }
             if(comm[0].toLowerCase().contains("customer")){
-                ret.add(0);
-                ret.add(1);
-                ret.add(2);
                 ret.add(3);
 
             }
