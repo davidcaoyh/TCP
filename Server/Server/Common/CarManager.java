@@ -1,8 +1,3 @@
-// -------------------------------
-// adapted from Kevin T. Manley
-// CSE 593
-// -------------------------------
-
 package Server.Common;
 
 
@@ -21,7 +16,12 @@ public class CarManager implements ResourceManager
 	private int port;
 
 	public static void main(String[] args){
-		CarManager rm = new CarManager("car_manager",1083);
+		int p = 1083;
+		if(args.length == 1){
+			p = args[0];
+		}
+		System.out.println("ServerPort: " + p);
+		CarManager rm = new CarManager("car_manager",p);
 		try{
 			rm.serverSocket = new ServerSocket(rm.port);
 			System.out.println("working");
@@ -98,97 +98,97 @@ public class CarManager implements ResourceManager
 				return returnV;
 			}
 			case "deletecars":{
-                returnV = returnV + "Deleting all cars at a particular location [xid=" + cmd[1] + "]\n";
-                returnV = returnV + "-Car Location: " + cmd[2] + "\n";
+				returnV = returnV + "Deleting all cars at a particular location [xid=" + cmd[1] + "]\n";
+				returnV = returnV + "-Car Location: " + cmd[2] + "\n";
 
-                int id = toInt(cmd[1]);
-                String location = cmd[2];
+				int id = toInt(cmd[1]);
+				String location = cmd[2];
 
-                if (rm.deleteCars(id, location)) {
-                    returnV = returnV + "Cars Deleted"+ "\n";
-                } else {
-                    returnV = returnV + "Cars could not be deleted"+ "\n";
+				if (rm.deleteCars(id, location)) {
+					returnV = returnV + "Cars Deleted"+ "\n";
+				} else {
+					returnV = returnV + "Cars could not be deleted"+ "\n";
 				}
 				return returnV;
-            }
-            case "querycars":{
-                returnV = returnV + "Querying cars location [xid=" + cmd[1] + "]\n";
-                returnV = returnV + "-Car Location: " + cmd[2];
-                
-                int id = toInt(cmd[1]);
-                String location = cmd[2];
+			}
+			case "querycars":{
+				returnV = returnV + "Querying cars location [xid=" + cmd[1] + "]\n";
+				returnV = returnV + "-Car Location: " + cmd[2];
 
-                int numCars = rm.queryCars(id, location);
+				int id = toInt(cmd[1]);
+				String location = cmd[2];
+
+				int numCars = rm.queryCars(id, location);
 				returnV = returnV + "Number of cars at this location: " + numCars+ "\n";
 				return returnV;
-            }
-            case "querycarsprice":{
-                returnV = returnV + "Querying cars price [xid=" + cmd[1] + "]\n";
-                returnV = returnV + "-Car Location: " + cmd[2];
+			}
+			case "querycarsprice":{
+				returnV = returnV + "Querying cars price [xid=" + cmd[1] + "]\n";
+				returnV = returnV + "-Car Location: " + cmd[2];
 
-                int id = toInt(cmd[1]);
-                String location = cmd[2];
+				int id = toInt(cmd[1]);
+				String location = cmd[2];
 
-                int price = rm.queryCarsPrice(id, location);
+				int price = rm.queryCarsPrice(id, location);
 				returnV = returnV + "Price of cars at this location: " + price+ "\n";
 				return returnV;
-            }
-            case "reservecar":{
-                returnV = returnV + "Reserving a car at a location [xid=" + cmd[1] + "]\n";
-                returnV = returnV + "-Customer ID: " + cmd[2];
-                returnV = returnV + "-Car Location: " + cmd[3];
+			}
+			case "reservecar":{
+				returnV = returnV + "Reserving a car at a location [xid=" + cmd[1] + "]\n";
+				returnV = returnV + "-Customer ID: " + cmd[2];
+				returnV = returnV + "-Car Location: " + cmd[3];
 
-                int id = toInt(cmd[1]);
-                int customerID = toInt(cmd[2]);
-                String location = cmd[3];
+				int id = toInt(cmd[1]);
+				int customerID = toInt(cmd[2]);
+				String location = cmd[3];
 
-                if (rm.reserveCar(id, customerID, location)) {
-                    returnV = returnV + "Car Reserved"+ "\n";
-                } else {
-                    returnV = returnV + "Car could not be reserved"+ "\n";
-                }
+				if (rm.reserveCar(id, customerID, location)) {
+					returnV = returnV + "Car Reserved"+ "\n";
+				} else {
+					returnV = returnV + "Car could not be reserved"+ "\n";
+				}
 				return returnV;
 			}
 
 			case "addcustomerid":{
-                returnV = returnV + "Adding a new customer [xid=" + cmd[1] + "]\n";
-                returnV = returnV + "-Customer ID: " + cmd[2] + "\n";
+				returnV = returnV + "Adding a new customer [xid=" + cmd[1] + "]\n";
+				returnV = returnV + "-Customer ID: " + cmd[2] + "\n";
 
-                int id = toInt(cmd[1]);
-                int customerID = toInt(cmd[2]);
+				int id = toInt(cmd[1]);
+				int customerID = toInt(cmd[2]);
 
-                if (rm.newCustomer(id, customerID)) {
-                    returnV = returnV + "Add customer ID: " + customerID+ "\n";
-                } else {
-                    returnV = returnV + "Customer could not be added"+ "\n";
-                }
-				return returnV;
-			}
-            case "deletecustomer":{
-                returnV = returnV + "Deleting a customer from the database [xid=" + cmd[1] + "]\n";
-                returnV = returnV + "-Customer ID: " +cmd[2] + "\n";
-
-                int id = toInt(cmd[1]);
-                int customerID = toInt(cmd[2]);
-
-                if (rm.deleteCustomer(id, customerID)) {
-                    returnV = returnV + "Customer Deleted";
-                } else {
-                    returnV = returnV + "Customer could not be deleted";
+				if (rm.newCustomer(id, customerID)) {
+					returnV = returnV + "Add customer ID: " + customerID+ "\n";
+				} else {
+					returnV = returnV + "Customer could not be added"+ "\n";
 				}
 				return returnV;
-            }
-            case "querycustomer":{
-                returnV = returnV + "Querying customer information [xid=" + cmd[1] + "]\n";
-                returnV = returnV + "-Customer ID: " + cmd[2] + "\n";
+			}
+			case "deletecustomer":{
+				returnV = returnV + "Deleting a customer from the database [xid=" + cmd[1] + "]\n";
+				returnV = returnV + "-Customer ID: " +cmd[2] + "\n";
 
-                int id = toInt(cmd[1]);
+				int id = toInt(cmd[1]);
 				int customerID = toInt(cmd[2]);
-				
-                String bill = rm.queryCustomerInfo(id, customerID);
+
+				if (rm.deleteCustomer(id, customerID)) {
+					returnV = returnV + "Customer Deleted";
+				} else {
+					returnV = returnV + "Customer could not be deleted";
+				}
+				return returnV;
+			}
+			case "querycustomer":{
+				returnV = returnV + "Querying customer information [xid=" + cmd[1] + "]\n";
+				returnV = returnV + "-Customer ID: " + cmd[2] + "\n";
+
+				int id = toInt(cmd[1]);
+				int customerID = toInt(cmd[2]);
+
+				String bill = rm.queryCustomerInfo(id, customerID);
 				returnV = returnV + bill;
 				return returnV;
-            }
+			}
 			default:{
 				return "Wrong Input";
 			}
@@ -252,46 +252,46 @@ public class CarManager implements ResourceManager
 		}
 	}
 
-	
+
 	// Query the number of available seats/rooms/cars
 	protected int queryNum(int xid, String key)
 	{
 		Trace.info("RM::queryNum(" + xid + ", " + key + ") called");
 		ReservableItem curObj = (ReservableItem)readData(xid, key);
-		int value = 0;  
+		int value = 0;
 		if (curObj != null)
 		{
 			value = curObj.getCount();
 		}
 		Trace.info("RM::queryNum(" + xid + ", " + key + ") returns count=" + value);
 		return value;
-	}    
+	}
 
 	// Query the price of an item
 	protected int queryPrice(int xid, String key)
 	{
 		Trace.info("RM::queryPrice(" + xid + ", " + key + ") called");
 		ReservableItem curObj = (ReservableItem)readData(xid, key);
-		int value = 0; 
+		int value = 0;
 		if (curObj != null)
 		{
 			value = curObj.getPrice();
 		}
 		Trace.info("RM::queryPrice(" + xid + ", " + key + ") returns cost=$" + value);
-		return value;        
+		return value;
 	}
 
 	// Reserve an item
 	protected boolean reserveItem(int xid, int customerID, String key, String location)
 	{
-		Trace.info("RM::reserveItem(" + xid + ", customer=" + customerID + ", " + key + ", " + location + ") called" );        
+		Trace.info("RM::reserveItem(" + xid + ", customer=" + customerID + ", " + key + ", " + location + ") called" );
 		// Read customer object if it exists (and read lock it)
 		Customer customer = (Customer)readCustomer(xid, Customer.getKey(customerID));
 		if (customer == null)
 		{
 			Trace.warn("RM::reserveItem(" + xid + ", " + customerID + ", " + key + ", " + location + ")  failed--customer doesn't exist");
 			return false;
-		} 
+		}
 
 		// Check if the item is available
 		ReservableItem item = (ReservableItem)readData(xid, key);
@@ -306,8 +306,8 @@ public class CarManager implements ResourceManager
 			return false;
 		}
 		else
-		{            
-			customer.reserve(key, location, item.getPrice());        
+		{
+			customer.reserve(key, location, item.getPrice());
 			writeCustomer(xid, customer.getKey(), customer);
 
 			// Decrease the number of available items in the storage
@@ -317,7 +317,7 @@ public class CarManager implements ResourceManager
 
 			Trace.info("RM::reserveItem(" + xid + ", " + customerID + ", " + key + ", " + location + ") succeeded");
 			return true;
-		}        
+		}
 	}
 
 
@@ -396,7 +396,7 @@ public class CarManager implements ResourceManager
 		return (Boolean.valueOf(string)).booleanValue();
 	}
 
-	
+
 
 	protected RMItem readCustomer(int xid, String key)	{
 		synchronized(c_data) {
@@ -439,11 +439,11 @@ public class CarManager implements ResourceManager
 			return false;
 		}
 		else
-		{            
+		{
 			// Increase the reserved numbers of all reservable items which the customer reserved. 
- 			RMHashMap reservations = customer.getReservations();
+			RMHashMap reservations = customer.getReservations();
 			for (String reservedKey : reservations.keySet())
-			{        
+			{
 				ReservedItem reserveditem = customer.getReservedItem(reservedKey);
 				Trace.info("RM::deleteCustomer(" + xid + ", " + customerID + ") has reserved " + reserveditem.getKey() + " " +  reserveditem.getCount() +  " times");
 				ReservableItem item  = (ReservableItem)readData(xid, reserveditem.getKey());

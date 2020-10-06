@@ -1,7 +1,3 @@
-// -------------------------------
-// adapted from Kevin T. Manley
-// CSE 593
-// -------------------------------
 
 package Server.Common;
 
@@ -21,7 +17,13 @@ public class RoomManager implements ResourceManager
 	private int port;
 
 	public static void main(String[] args){
-		RoomManager rm = new RoomManager("room_manager",1081);
+
+		int p = 1081;
+		if(args.length == 1){
+			p = args[0];
+		}
+		System.out.println("ServerPort: " + p);
+		RoomManager rm = new RoomManager("room_manager",p);
 		try{
 			rm.serverSocket = new ServerSocket(rm.port);
 			System.out.println("working");
@@ -78,118 +80,118 @@ public class RoomManager implements ResourceManager
 		String returnV = "";
 		switch(cmd[0].toLowerCase()){
 
-            case "addrooms":{
-                returnV = returnV + "Adding new rooms [xid=" + cmd[1] + "]\n";
-                returnV = returnV + "-Room Location: " + cmd[2] + "\n";
-                returnV = returnV + "-Number of Rooms: " + cmd[3] + "\n";
-                returnV = returnV + "-Room Price: " + cmd[4] + "\n";
+			case "addrooms":{
+				returnV = returnV + "Adding new rooms [xid=" + cmd[1] + "]\n";
+				returnV = returnV + "-Room Location: " + cmd[2] + "\n";
+				returnV = returnV + "-Number of Rooms: " + cmd[3] + "\n";
+				returnV = returnV + "-Room Price: " + cmd[4] + "\n";
 
-                int id = toInt(cmd[1]);
-                String location = cmd[2];
-                int numRooms = toInt(cmd[3]);
-                int price = toInt(cmd[4]);
+				int id = toInt(cmd[1]);
+				String location = cmd[2];
+				int numRooms = toInt(cmd[3]);
+				int price = toInt(cmd[4]);
 
-                if (rm.addRooms(id, location, numRooms, price)) {
-                    returnV = returnV + "Rooms added"+ "\n";
-                } else {
-                    returnV = returnV + "Rooms could not be added"+ "\n";
-                }
-				return returnV;
-            }
-            case "deleterooms":{
-                returnV = returnV + "Deleting all rooms at a particular location [xid=" + cmd[1] + "]\n";
-                returnV = returnV + "-Car Location: " + cmd[2] + "\n";
-
-                int id = toInt(cmd[1]);
-                String location = cmd[2];
-
-                if (rm.deleteRooms(id, location)) {
-                    returnV = returnV + "Rooms Deleted"+ "\n";
-                } else {
-                    returnV = returnV + "Rooms could not be deleted"+ "\n";
-                }
-				return returnV;
-            }
-            case "queryrooms":{
-
-                returnV = returnV + "Querying rooms location [xid=" + cmd[1] + "\n";
-                returnV = returnV + "-Room Location: " + cmd[2] + "\n";
-                
-                int id = toInt(cmd[1]);
-                String location = cmd[2];
-
-                int numRoom = rm.queryRooms(id, location);
-                returnV = returnV + "Number of rooms at this location: " + numRoom+ "\n";
-				return returnV;
-            }
-            case "queryroomsprice":{
-                returnV = returnV + "Querying rooms price [xid=" + cmd[1] + "\n";
-                returnV = returnV + "-Room Location: " + cmd[2]+ "\n";
-
-                int id = toInt(cmd[1]);
-                String location = cmd[2];
-
-                int price = rm.queryRoomsPrice(id, location);
-                returnV = returnV + "Price of rooms at this location: " + price+ "\n";
-				return returnV;
-            }
-            case "reserveroom":{
-                returnV = returnV + "Reserving a room at a location [xid=" + cmd[1] + "\n";
-                returnV = returnV + "-Customer ID: " + cmd[2];
-                returnV = returnV + "-Room Location: " + cmd[3];
-                
-                int id = toInt(cmd[1]);
-                int customerID = toInt(cmd[2]);
-                String location = cmd[3];
-
-                if (rm.reserveRoom(id, customerID, location)) {
-                    returnV = returnV + "Room Reserved"+ "\n";
-                } else {
-                    returnV = returnV + "Room could not be reserved"+ "\n";
-                }
-				return returnV;
-            }
-
-	
-			case "addcustomerid":{
-                returnV = returnV + "Adding a new customer [xid=" + cmd[1] + "]\n";
-                returnV = returnV + "-Customer ID: " + cmd[2] + "\n";
-
-                int id = toInt(cmd[1]);
-                int customerID = toInt(cmd[2]);
-
-                if (rm.newCustomer(id, customerID)) {
-                    returnV = returnV + "Add customer ID: " + customerID+ "\n";
-                } else {
-                    returnV = returnV + "Customer could not be added"+ "\n";
-                }
-				return returnV;
-			}
-            case "deletecustomer":{
-                returnV = returnV + "Deleting a customer from the database [xid=" + cmd[1] + "]\n";
-                returnV = returnV + "-Customer ID: " +cmd[2] + "\n";
-
-                int id = toInt(cmd[1]);
-                int customerID = toInt(cmd[2]);
-
-                if (rm.deleteCustomer(id, customerID)) {
-                    returnV = returnV + "Customer Deleted";
-                } else {
-                    returnV = returnV + "Customer could not be deleted";
+				if (rm.addRooms(id, location, numRooms, price)) {
+					returnV = returnV + "Rooms added"+ "\n";
+				} else {
+					returnV = returnV + "Rooms could not be added"+ "\n";
 				}
 				return returnV;
-            }
-            case "querycustomer":{
-                returnV = returnV + "Querying customer information [xid=" + cmd[1] + "]\n";
-                returnV = returnV + "-Customer ID: " + cmd[2] + "\n";
+			}
+			case "deleterooms":{
+				returnV = returnV + "Deleting all rooms at a particular location [xid=" + cmd[1] + "]\n";
+				returnV = returnV + "-Car Location: " + cmd[2] + "\n";
 
-                int id = toInt(cmd[1]);
+				int id = toInt(cmd[1]);
+				String location = cmd[2];
+
+				if (rm.deleteRooms(id, location)) {
+					returnV = returnV + "Rooms Deleted"+ "\n";
+				} else {
+					returnV = returnV + "Rooms could not be deleted"+ "\n";
+				}
+				return returnV;
+			}
+			case "queryrooms":{
+
+				returnV = returnV + "Querying rooms location [xid=" + cmd[1] + "\n";
+				returnV = returnV + "-Room Location: " + cmd[2] + "\n";
+
+				int id = toInt(cmd[1]);
+				String location = cmd[2];
+
+				int numRoom = rm.queryRooms(id, location);
+				returnV = returnV + "Number of rooms at this location: " + numRoom+ "\n";
+				return returnV;
+			}
+			case "queryroomsprice":{
+				returnV = returnV + "Querying rooms price [xid=" + cmd[1] + "\n";
+				returnV = returnV + "-Room Location: " + cmd[2]+ "\n";
+
+				int id = toInt(cmd[1]);
+				String location = cmd[2];
+
+				int price = rm.queryRoomsPrice(id, location);
+				returnV = returnV + "Price of rooms at this location: " + price+ "\n";
+				return returnV;
+			}
+			case "reserveroom":{
+				returnV = returnV + "Reserving a room at a location [xid=" + cmd[1] + "\n";
+				returnV = returnV + "-Customer ID: " + cmd[2];
+				returnV = returnV + "-Room Location: " + cmd[3];
+
+				int id = toInt(cmd[1]);
 				int customerID = toInt(cmd[2]);
-				
-                String bill = rm.queryCustomerInfo(id, customerID);
+				String location = cmd[3];
+
+				if (rm.reserveRoom(id, customerID, location)) {
+					returnV = returnV + "Room Reserved"+ "\n";
+				} else {
+					returnV = returnV + "Room could not be reserved"+ "\n";
+				}
+				return returnV;
+			}
+
+
+			case "addcustomerid":{
+				returnV = returnV + "Adding a new customer [xid=" + cmd[1] + "]\n";
+				returnV = returnV + "-Customer ID: " + cmd[2] + "\n";
+
+				int id = toInt(cmd[1]);
+				int customerID = toInt(cmd[2]);
+
+				if (rm.newCustomer(id, customerID)) {
+					returnV = returnV + "Add customer ID: " + customerID+ "\n";
+				} else {
+					returnV = returnV + "Customer could not be added"+ "\n";
+				}
+				return returnV;
+			}
+			case "deletecustomer":{
+				returnV = returnV + "Deleting a customer from the database [xid=" + cmd[1] + "]\n";
+				returnV = returnV + "-Customer ID: " +cmd[2] + "\n";
+
+				int id = toInt(cmd[1]);
+				int customerID = toInt(cmd[2]);
+
+				if (rm.deleteCustomer(id, customerID)) {
+					returnV = returnV + "Customer Deleted";
+				} else {
+					returnV = returnV + "Customer could not be deleted";
+				}
+				return returnV;
+			}
+			case "querycustomer":{
+				returnV = returnV + "Querying customer information [xid=" + cmd[1] + "]\n";
+				returnV = returnV + "-Customer ID: " + cmd[2] + "\n";
+
+				int id = toInt(cmd[1]);
+				int customerID = toInt(cmd[2]);
+
+				String bill = rm.queryCustomerInfo(id, customerID);
 				returnV = returnV + bill;
 				return returnV;
-            }
+			}
 
 
 			default:{
@@ -255,46 +257,46 @@ public class RoomManager implements ResourceManager
 		}
 	}
 
-	
+
 	// Query the number of available seats/rooms/cars
 	protected int queryNum(int xid, String key)
 	{
 		Trace.info("RM::queryNum(" + xid + ", " + key + ") called");
 		ReservableItem curObj = (ReservableItem)readData(xid, key);
-		int value = 0;  
+		int value = 0;
 		if (curObj != null)
 		{
 			value = curObj.getCount();
 		}
 		Trace.info("RM::queryNum(" + xid + ", " + key + ") returns count=" + value);
 		return value;
-	}    
+	}
 
 	// Query the price of an item
 	protected int queryPrice(int xid, String key)
 	{
 		Trace.info("RM::queryPrice(" + xid + ", " + key + ") called");
 		ReservableItem curObj = (ReservableItem)readData(xid, key);
-		int value = 0; 
+		int value = 0;
 		if (curObj != null)
 		{
 			value = curObj.getPrice();
 		}
 		Trace.info("RM::queryPrice(" + xid + ", " + key + ") returns cost=$" + value);
-		return value;        
+		return value;
 	}
 
 	// Reserve an item
 	protected boolean reserveItem(int xid, int customerID, String key, String location)
 	{
-		Trace.info("RM::reserveItem(" + xid + ", customer=" + customerID + ", " + key + ", " + location + ") called" );        
+		Trace.info("RM::reserveItem(" + xid + ", customer=" + customerID + ", " + key + ", " + location + ") called" );
 		// Read customer object if it exists (and read lock it)
 		Customer customer = (Customer)readCustomer(xid, Customer.getKey(customerID));
 		if (customer == null)
 		{
 			Trace.warn("RM::reserveItem(" + xid + ", " + customerID + ", " + key + ", " + location + ")  failed--customer doesn't exist");
 			return false;
-		} 
+		}
 
 		// Check if the item is available
 		ReservableItem item = (ReservableItem)readData(xid, key);
@@ -309,8 +311,8 @@ public class RoomManager implements ResourceManager
 			return false;
 		}
 		else
-		{            
-			customer.reserve(key, location, item.getPrice());        
+		{
+			customer.reserve(key, location, item.getPrice());
 			writeCustomer(xid, customer.getKey(), customer);
 
 			// Decrease the number of available items in the storage
@@ -320,7 +322,7 @@ public class RoomManager implements ResourceManager
 
 			Trace.info("RM::reserveItem(" + xid + ", " + customerID + ", " + key + ", " + location + ") succeeded");
 			return true;
-		}        
+		}
 	}
 
 
@@ -435,11 +437,11 @@ public class RoomManager implements ResourceManager
 			return false;
 		}
 		else
-		{            
+		{
 			// Increase the reserved numbers of all reservable items which the customer reserved. 
- 			RMHashMap reservations = customer.getReservations();
+			RMHashMap reservations = customer.getReservations();
 			for (String reservedKey : reservations.keySet())
-			{        
+			{
 				ReservedItem reserveditem = customer.getReservedItem(reservedKey);
 				Trace.info("RM::deleteCustomer(" + xid + ", " + customerID + ") has reserved " + reserveditem.getKey() + " " +  reserveditem.getCount() +  " times");
 				ReservableItem item  = (ReservableItem)readData(xid, reserveditem.getKey());
