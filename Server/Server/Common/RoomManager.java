@@ -16,6 +16,7 @@ public class RoomManager implements ResourceManager
 {
 	protected String m_name = "";
 	protected RMHashMap m_data = new RMHashMap();
+	protected RMHashMap c_data = new RMHashMap();
 	ServerSocket serverSocket;
 	private int port;
 
@@ -56,12 +57,9 @@ public class RoomManager implements ResourceManager
 				BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 				PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 				String msg = null;
-				System.out.println("I got called");
 				msg = in.readLine();
 //				System.out.println(msg);
 				if(msg!=null){
-					System.out.println("I got called1");
-
 					String[] command = msg.split(",");
 					String returnV = execute(command, roomManager);
 					out.println(returnV);
@@ -151,6 +149,46 @@ public class RoomManager implements ResourceManager
 				return returnV;
             }
 
+	
+			case "addcustomerid":{
+                returnV = returnV + "Adding a new customer [xid=" + cmd[1] + "]\n";
+                returnV = returnV + "-Customer ID: " + cmd[2] + "\n";
+
+                int id = toInt(cmd[1]);
+                int customerID = toInt(cmd[2]);
+
+                if (rm.newCustomer(id, customerID)) {
+                    returnV = returnV + "Add customer ID: " + customerID+ "\n";
+                } else {
+                    returnV = returnV + "Customer could not be added"+ "\n";
+                }
+				return returnV;
+			}
+            case "deletecustomer":{
+                returnV = returnV + "Deleting a customer from the database [xid=" + cmd[1] + "]\n";
+                returnV = returnV + "-Customer ID: " +cmd[2] + "\n";
+
+                int id = toInt(cmd[1]);
+                int customerID = toInt(cmd[2]);
+
+                if (rm.deleteCustomer(id, customerID)) {
+                    returnV = returnV + "Customer Deleted";
+                } else {
+                    returnV = returnV + "Customer could not be deleted";
+				}
+				return returnV;
+            }
+            case "querycustomer":{
+                returnV = returnV + "Querying customer information [xid=" + cmd[1] + "]\n";
+                returnV = returnV + "-Customer ID: " + cmd[2] + "\n";
+
+                int id = toInt(cmd[1]);
+				int customerID = toInt(cmd[2]);
+				
+                String bill = rm.queryCustomerInfo(id, customerID);
+				returnV = returnV + bill;
+				return returnV;
+            }
 
 
 			default:{
@@ -250,7 +288,7 @@ public class RoomManager implements ResourceManager
 	{
 		Trace.info("RM::reserveItem(" + xid + ", customer=" + customerID + ", " + key + ", " + location + ") called" );        
 		// Read customer object if it exists (and read lock it)
-		Customer customer = (Customer)readData(xid, Customer.getKey(customerID));
+		Customer customer = (Customer)readCustomer(xid, Customer.getKey(customerID));
 		if (customer == null)
 		{
 			Trace.warn("RM::reserveItem(" + xid + ", " + customerID + ", " + key + ", " + location + ")  failed--customer doesn't exist");
@@ -272,7 +310,7 @@ public class RoomManager implements ResourceManager
 		else
 		{            
 			customer.reserve(key, location, item.getPrice());        
-			writeData(xid, customer.getKey(), customer);
+			writeCustomer(xid, customer.getKey(), customer);
 
 			// Decrease the number of available items in the storage
 			item.setCount(item.getCount() - 1);
@@ -354,5 +392,91 @@ public class RoomManager implements ResourceManager
 	{
 		return (Boolean.valueOf(string)).booleanValue();
 	}
+
+	protected RMItem readCustomer(int xid, String key)	{
+		synchronized(c_data) {
+			RMItem item = c_data.get(key);
+			if (item != null) {
+				return (RMItem)item.clone();
+			}
+			return null;
+		}
+	}
+
+	protected void writeCustomer(int xid, String key, RMItem value)
+	{
+		synchronized(c_data) {
+			c_data.put(key, value);
+		}
+	}
+
+	public boolean newCustomer(int xid, int customerID){
+		Trace.info("RM::newCustomer(" + xid + ", " + customerID + ") called");
+		Customer customer = (Customer)readCustomer(xid, Customer.getKey(customerID));
+		if(customer == null){
+			customer = new Customer(customerID);
+			writeCustomer(xid, customer.getKey(), customer);
+			Trace.info("RM::newCustomer(" + xid + ", " + customerID + ") created a new customer");
+			return true;
+		}
+		else{
+			Trace.info("INFO: RM::newCustomer(" + xid + ", " + customerID + ") failed--customer already exists");
+			return false;
+		}
+	}
+
+	public boolean deleteCustomer(int xid, int customerID){
+		Trace.info("RM::deleteCustomer(" + xid + ", " + customerID + ") called");
+		Customer customer = (Customer)readCustomer(xid, Customer.getKey(customerID));
+		if (customer == null)
+		{
+			Trace.warn("RM::deleteCustomer(" + xid + ", " + customerID + ") failed--customer doesn't exist");
+			return false;
+		}
+		else
+		{            
+			// Increase the reserved numbers of all reservable items which the customer reserved. 
+ 			RMHashMap reservations = customer.getReservations();
+			for (String reservedKey : reservations.keySet())
+			{        
+				ReservedItem reserveditem = customer.getReservedItem(reservedKey);
+				Trace.info("RM::deleteCustomer(" + xid + ", " + customerID + ") has reserved " + reserveditem.getKey() + " " +  reserveditem.getCount() +  " times");
+				ReservableItem item  = (ReservableItem)readData(xid, reserveditem.getKey());
+				Trace.info("RM::deleteCustomer(" + xid + ", " + customerID + ") has reserved " + reserveditem.getKey() + " which is reserved " +  item.getReserved() +  " times and is still available " + item.getCount() + " times");
+				item.setReserved(item.getReserved() - reserveditem.getCount());
+				item.setCount(item.getCount() + reserveditem.getCount());
+				writeData(xid, item.getKey(), item);
+			}
+
+			// Remove the customer from the storage
+			removeCustomer(xid, customer.getKey());
+			Trace.info("RM::deleteCustomer(" + xid + ", " + customerID + ") succeeded");
+			return true;
+		}
+	}
+
+	public void removeCustomer(int xid, String key){
+		synchronized(c_data){
+			c_data.remove(key);
+		}
+	}
+
+	public String queryCustomerInfo(int xid, int customerID){
+		Trace.info("RM::queryCustomerInfo(" + xid + ", " + customerID + ") called");
+		Customer customer = (Customer)readCustomer(xid, Customer.getKey(customerID));
+		if (customer == null)
+		{
+			Trace.warn("RM::queryCustomerInfo(" + xid + ", " + customerID + ") failed--customer doesn't exist");
+			// NOTE: don't change this--WC counts on this value indicating a customer does not exist...
+			return "";
+		}
+		else
+		{
+			Trace.info("RM::queryCustomerInfo(" + xid + ", " + customerID + ")");
+			System.out.println(customer.getBill());
+			return customer.getBill();
+		}
+	}
+
 }
  
