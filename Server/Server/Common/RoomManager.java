@@ -58,10 +58,11 @@ public class RoomManager implements ResourceManager
 				PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 				String msg = null;
 				msg = in.readLine();
-//				System.out.println(msg);
+				System.out.println("Command Received: \"" + msg + "\"");
 				if(msg!=null){
 					String[] command = msg.split(",");
 					String returnV = execute(command, roomManager);
+					System.out.println(returnV);
 					out.println(returnV);
 				}
 				in.close();
