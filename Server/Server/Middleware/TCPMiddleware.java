@@ -18,26 +18,27 @@ public class TCPMiddleware {
     Socket roomSocket;
     Socket flightSocket;
 
-    private static String car_host = "localhost";
-    private static String room_host = "localhost";
-    private static String flight_host = "localhost";
+    private String car_host = "localhost";
+    private String room_host = "localhost";
+    private String flight_host = "localhost";
 
-    private static int car_port = 1083;
-    private static int room_port = 1081;
-    private static int flight_port = 1082;
+    private int car_port = 1083;
+    private int room_port = 1081;
+    private int flight_port = 1082;
 
-    private static int middleware_port = 1080;
+    private int middleware_port = 1080;
 
     ServerSocket serverSocket;
     protected RMHashMap m_data = new RMHashMap();
 
-    public TCPMiddleware(String host, int carP, int roomP,int flightP,String carH, String roomH,String flightH){
-        car_host = carH;
-        room_host = roomH;
-        flight_host = flightH;
-        car_port = carP;
-        room_port = roomP;
-        flight_port = flightP;
+    public TCPMiddleware(int middleware_port, int carP, int roomP,int flightP,String carH, String roomH,String flightH){
+        this.middleware_port = middleware_port;
+        this.car_host = carH;
+        this.room_host = roomH;
+        this.flight_host = flightH;
+        this.car_port = carP;
+        this.room_port = roomP;
+        this.flight_port = flightP;
     }
     public TCPMiddleware(){
 
@@ -52,13 +53,13 @@ public class TCPMiddleware {
             return;
         }
         else if(args.length == 7){
-             middleware = new TCPMiddleware(args[0], Integer.parseInt(args[1]),Integer.parseInt(args[2]),Integer.parseInt(args[3]),args[4],args[5],args[6]);
+             middleware = new TCPMiddleware(Integer.parseInt(args[0]), Integer.parseInt(args[1]),Integer.parseInt(args[2]),Integer.parseInt(args[3]),args[4],args[5],args[6]);
         }
         else{
             middleware = new TCPMiddleware();
         }
         try{
-            middleware.serverSocket = new ServerSocket(middleware_port);
+            middleware.serverSocket = new ServerSocket(middleware.middleware_port);
             System.out.println(123);
             while(true){
                 System.out.println(456);
@@ -80,9 +81,12 @@ public class TCPMiddleware {
 
         public void run(){
             try {
-                middleware.carSocket = new Socket(car_host,car_port);
-                middleware.roomSocket = new Socket(room_host,room_port);
-                middleware.flightSocket =new Socket(flight_host, flight_port);
+                System.out.println(middleware.car_host + ":" + middleware.car_port);
+                System.out.println(middleware.room_host + ":" + middleware.room_port);
+                System.out.println(middleware.flight_host + ":" + middleware.flight_port);
+                middleware.carSocket = new Socket(middleware.car_host,middleware.car_port);
+                middleware.roomSocket = new Socket(middleware.room_host,middleware.room_port);
+                middleware.flightSocket =new Socket(middleware.flight_host, middleware.flight_port);
 
 
                 BufferedReader in_client = new BufferedReader(new InputStreamReader(socket.getInputStream()));
