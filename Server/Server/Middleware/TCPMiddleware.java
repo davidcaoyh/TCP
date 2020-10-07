@@ -52,8 +52,12 @@ public class TCPMiddleware {
             System.out.println("Error: Invalid Input");
             return;
         }
-        else if(args.length == 7){
-             middleware = new TCPMiddleware(Integer.parseInt(args[0]), Integer.parseInt(args[1]),Integer.parseInt(args[2]),Integer.parseInt(args[3]),args[4],args[5],args[6]);
+        else if(args.length > 0){
+            for(String temp:args){
+                System.out.println(temp);
+            }
+            middleware = new TCPMiddleware(Integer.parseInt(args[0]), Integer.parseInt(args[1]),
+                    Integer.parseInt(args[2]),Integer.parseInt(args[3]),args[4],args[5],args[6]);
         }
         else{
             middleware = new TCPMiddleware();
