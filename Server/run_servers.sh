@@ -16,7 +16,7 @@ tmux new-session \; \
 	select-pane -t 3 \; \
 	send-keys "ssh -t hcheng35@${MACHINES[2]} \"cd /home/2018/hcheng35/COMP512/TCP/Server > /dev/null; echo -n 'Connected to RoomServer'; ./run_room_server.sh 1080\"" C-m \; \
 	select-pane -t 4 \; \
-	send-keys "ssh -t hcheng35@${MACHINES[3]} \"cd /home/2018/hcheng35/COMP512/TCP/Server > /dev/null; echo -n 'Connected to MiddlewareServer'; sleep .5s; ./run_server.sh host 1080 1080 1080 ${MACHINES[0]} ${MACHINES[2]} ${MACHINES[1]}\"" C-m \; \
+	send-keys "ssh -t hcheng35@${MACHINES[3]} \"cd /home/2018/hcheng35/COMP512/TCP/Server > /dev/null; echo -n 'Connected to MiddlewareServer'; sleep .5s; ./run_server.sh 1080 1080 1080 1080 ${MACHINES[0]} ${MACHINES[2]} ${MACHINES[1]}\"" C-m \; \
 	select-pane -t 0 \; \
 	send-keys "ssh -t hcheng35@${MACHINES[4]} \"cd /home/2018/hcheng35/COMP512/TCP/Client > /dev/null; echo -n 'Connected to '; Client; sleep .5s; ./run_client.sh ${MACHINES[3]} 1080\"" C-m \;
 #Right now the only window works in client
