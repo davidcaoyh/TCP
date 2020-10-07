@@ -18,14 +18,28 @@ public class Client
 	private static String server_host = "localhost";
 	private static int server_port = 1080;
 
-	public Client()
+	public Client(){}
+
+	public Client(String host, int port)
 	{
-		super();
+		server_host = host;
+		server_port = port;
 	}
 
 	public static void main(String[] args){
-		Client client = new Client();
-		client.start();
+		if(args.length > 2){
+			System.out.println("Error: Invalid Input");
+			return;
+		}
+		else if(args.length == 2){
+			Client client = new Client(args[0], Integer.parseInt(args[1]));
+			client.start();
+		}
+		else{
+			Client client = new Client();
+			client.start();
+		}
+
 	}
 
 	public void connectServer(){
