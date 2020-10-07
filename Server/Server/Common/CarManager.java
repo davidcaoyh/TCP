@@ -18,7 +18,7 @@ public class CarManager implements ResourceManager
 	public static void main(String[] args){
 		int p = 1083;
 		if(args.length == 1){
-			p = args[0];
+			p = Integer.parseInt(args[0]);
 		}
 		System.out.println("ServerPort: " + p);
 		CarManager rm = new CarManager("car_manager",p);

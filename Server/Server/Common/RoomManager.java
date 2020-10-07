@@ -20,7 +20,7 @@ public class RoomManager implements ResourceManager
 
 		int p = 1081;
 		if(args.length == 1){
-			p = args[0];
+			p = Integer.parseInt(args[0]);
 		}
 		System.out.println("ServerPort: " + p);
 		RoomManager rm = new RoomManager("room_manager",p);

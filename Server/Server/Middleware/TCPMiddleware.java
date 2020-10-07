@@ -31,26 +31,31 @@ public class TCPMiddleware {
     ServerSocket serverSocket;
     protected RMHashMap m_data = new RMHashMap();
 
-    public TCPMiddleware(String host, int carP, int roomP, int flightP){
-        car_host = host;
-        room_host = host;
-        flight_host = host;
+    public TCPMiddleware(String host, int carP, int roomP,int flightP,String carH, String roomH,String flightH){
+        car_host = carH;
+        room_host = roomH;
+        flight_host = flightH;
         car_port = carP;
         room_port = roomP;
         flight_port = flightP;
     }
+    public TCPMiddleware(){
+
+    }
+
 
     public static void main(String[] args){
-        System.out.println("started");		
-        if(args.length > 4){
+        System.out.println("started");
+        TCPMiddleware middleware;
+        if(args.length > 7){
             System.out.println("Error: Invalid Input");
-            break;
+            return;
         }
-        else if(args.length == 4){
-            TCPMiddleware middleware = new TCPMiddleware(args[0], Integer.parseInt(args[1]),Integer.parseInt(args[2]),Integer.parseInt(args[3]));
+        else if(args.length == 7){
+             middleware = new TCPMiddleware(args[0], Integer.parseInt(args[1]),Integer.parseInt(args[2]),Integer.parseInt(args[3]),args[4],args[5],args[6]);
         }
         else{
-            TCPMiddleware middleware = new TCPMiddleware();
+            middleware = new TCPMiddleware();
         }
         try{
             middleware.serverSocket = new ServerSocket(middleware_port);
@@ -162,12 +167,16 @@ public class TCPMiddleware {
 
                         while((m=fromCar.readLine())!=null){
                             System.out.println(m);
-                            customer_reply = customer_reply +"\n" +m;
+                            if(m.contains("$")) {
+                                customer_reply = customer_reply + "\n" + m;
+                            }
                         }
 
-                        while((m=fromRoom.readLine())!=null){
+                        while((m=fromRoom.readLine())!=null) {
                             System.out.println(m);
-                            customer_reply = customer_reply +"\n" +m;
+                            if (m.contains("$")) {
+                                customer_reply = customer_reply + "\n" + m;
+                            }
                         }
                     }
 
@@ -182,15 +191,15 @@ public class TCPMiddleware {
                             customer_reply = customer_reply +"\n" +m;
                         }
 
-                        while((m=fromCar.readLine())!=null){
-                            System.out.println(m);
-                            customer_reply = customer_reply +"\n" +m;
-                        }
-
-                        while((m=fromRoom.readLine())!=null){
-                            System.out.println(m);
-                            customer_reply = customer_reply +"\n" +m;
-                        }
+//                        while((m=fromCar.readLine())!=null){
+//                            System.out.println(m);
+//                            customer_reply = customer_reply +"\n" +m;
+//                        }
+//
+//                        while((m=fromRoom.readLine())!=null){
+//                            System.out.println(m);
+//                            customer_reply = customer_reply +"\n" +m;
+//                        }
 
 
                     }
