@@ -147,6 +147,7 @@ public class TCPMiddleware {
                     }
 
                 if(servers.contains(3)){
+                    System.out.println("I'm here");
                     String[] cmds = msg.split(",");
                     if(cmds[0].equals("AddCustomer")){
                         int cid =  this.middleware.newCustomer(Integer.parseInt(cmds[1]));
