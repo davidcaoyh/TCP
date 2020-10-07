@@ -31,28 +31,28 @@ public class TCPMiddleware {
     ServerSocket serverSocket;
     protected RMHashMap m_data = new RMHashMap();
 
-
-//    public void connect_car(){
-//        try{
-//            socket = new Socket(server_host,server_port);
-//            from_server = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-//            to_server = new PrintWriter(socket.getOutputStream(), true);
-//            flag = true;
-//        }catch(IOException e){
-//            e.printStackTrace();
-//        }
-//    }
-
-
+    public TCPMiddleware(String host, int carP, int roomP, int flightP){
+        car_host = host;
+        room_host = host;
+        flight_host = host;
+        car_port = carP;
+        room_port = roomP;
+        flight_port = flightP;
+    }
 
     public static void main(String[] args){
-        System.out.println("started");
-        TCPMiddleware middleware = new TCPMiddleware();
+        System.out.println("started");		
+        if(args.length > 4){
+            System.out.println("Error: Invalid Input");
+            break;
+        }
+        else if(args.length == 4){
+            TCPMiddleware middleware = new TCPMiddleware(args[0], Integer.parseInt(args[1]),Integer.parseInt(args[2]),Integer.parseInt(args[3]));
+        }
+        else{
+            TCPMiddleware middleware = new TCPMiddleware();
+        }
         try{
-//            middleware.carSocket = new Socket(car_host,car_port);
-
-//            middleware.flightSocket =new Socket(flight_host, flight_port);
-//            middleware.roomSocket = new Socket(room_host,room_port);
             middleware.serverSocket = new ServerSocket(middleware_port);
             System.out.println(123);
             while(true){
